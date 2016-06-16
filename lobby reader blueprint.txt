@@ -18,27 +18,29 @@ Integer[2][0] // get player 3 from team 1
 public static void main(String[] args){
 	BufferedImage img = screenshot();
 
+	// default client location, adjust by screen resolution
 	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-	int[] X = teamLines(screenSize);
-	int[] Y = playerLines(screenSize);
-}
-
-/*
- * prereq: the window must be in the default location and size
- */
-public int[] teamLines(Dimension screenSize){
-
-}
-
-/*
- * prereq: the window must be in the default location and size
- */
-public int[] playerLines(Dimension screenSize){
-	final Dimension defaultClientSize = new Dimesion(1024, 768);
+	Dimension defaultClientSize = new Dimension(1024, 768);
 	Dimension topLeftCoords = new Dimension(((screenSize.x/4)-(defaultClientSize.x/4)),
 											(screenSize.y/4)-(defaultClientSize.y/4));
-	final int TEAM_1_X = topLeftCoords.x+34;
-	final int TEAM_2_X = topLeftCoords.x+1010;
-	final int PLAYER_1_Y = topLeftCoords.y+113;
-	final int PLAYER_SPACING = 66;
+	int t1x = topLeftCoords.x+34; // team 1 x
+	int t2x = topLeftCoords.x+1010; // team 2 x
+	int y1 = topLeftCoords.y+113; // y-position of the first player on each team
+	int playerSpacing = 66; // spacing per player
+
+	// put this in its own thread, for team 1. Then do a second for team 2
+	for(int i = 0; i < 5; i++){ // for every player
+		String selection = identifySelection(new Dimension(t1x, y1+playerSpacing*i));
+	}
+
+	for(int i = 0; i < 5; i++){ // for every player
+		String selection = identifySelection(new Dimension(t2x, y1+playerSpacing*i));
+	}
 }
+
+/*------------------------------
+supposedly, [GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+int width = gd.getDisplayMode().getWidth();
+int height = gd.getDisplayMode().getHeight();]
+is supposed to be better for grabbing the monitor resolution in a multi-monitor config.
+i.e. use this as a back up if program goes kaputt due to resolution finding problems*/
