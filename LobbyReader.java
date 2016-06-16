@@ -5,6 +5,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
+import javax.swing.JFrame;
+
 /* take screenshot
 check all champ placeholders
 -> check if a champ is selected there
@@ -29,9 +31,11 @@ public class LobbyReader{
 	private int t1x, t2x, y1, playerSpacing;
 	private Dimension screenSize, defaultClientSize, topLeftCoords;
 	
+	private JFrame imageViewer;
+	
 	public LobbyReader(){
-		openPortraitFolder();
-		bankFolder = new File("/portraits");
+		imageViewer = new JFrame("LR-Vision");
+		
 	
 		final int PICKS = 10;
 		final int BANS = 6;
@@ -47,40 +51,73 @@ public class LobbyReader{
 		t2x = topLeftCoords.width+1010; // team 2 x
 		y1 = topLeftCoords.height+113; // y-position of the first player on each team
 		playerSpacing = 66; // spacing per player
+
+		openPortraitFolder();
+		processPortraits();
+	}
 	
+	private void processPortraits() {
 		// TODO: MULTITHREAD: put this in its own thread, for team 1. Then do a second for team 2
 		for(int i = 0; i < 5; i++){ // for every player
-			String selection = identifySelection(new Dimension(t1x, y1+playerSpacing*i));
+			String playerName = OCR(new Dimension(t1x, y1+playerSpacing*i));
+			String champName = identifySelection(new Dimension(t1x, y1+playerSpacing*i));
+			selection[i] += "1" + playerName + ":" + champName;
 		}
 	
 		for(int i = 0; i < 5; i++){ // for every player
 			String selection = identifySelection(new Dimension(t2x, y1+playerSpacing*i));
 		}
 	}
+
+	// TODO: implement tesseract-ocr api
+	private String OCR(Dimension dimension) {
+		
+		
+		return null;
+	}
+
+	public BufferedImage screenshot(){
+		// TODO: replace with auto screenshot taker, or constant screen checker (for updating screenshots)
+		// ideas: opencv/+ocr, find the portraits, and save them. that's the name of the game :^)
+		try {
+			return new java.awt.Robot().createScreenCapture(new java.awt.Rectangle(java.awt.Toolkit.getDefaultToolkit().getScreenSize()));
+		} catch (java.awt.HeadlessException | java.awt.AWTException e1) {
+			e1.printStackTrace();
+		}
+	}
 	
 	public void openPortraitFolder(){
-	
+		bankFolder = new File("/portraits");
 	}
 	
 	/*
 	 * the champ portrait bank will need to be stocked before processing is possible
 	 * check portrait: found? Return name. Not? save it, and ask for its label
 	 */
-	public String identifySelection(Dimension playerCoords){
-	
+	public String identifySelection(Dimension playerCoords) throws IOException{
 		// check portrait
 		final int SIDE_LENGTH = 5;
 		for(int x = 0; x < SIDE_LENGTH; x++){
 			for(int y = 0; y < SIDE_LENGTH; y++){
-				int clr = checkPixel(new Dimension(playerCoords.width+x, playerCoords.height+y);
+				int clr = checkPixel(new Dimension(playerCoords.width+x, playerCoords.height+y));
 				// if found
 	
 				// if not found{
 					System.out.println("What is the name of this champ?");
-					displayImage(champ);
-				}
+					BufferedImage portrait = ss.getSubimage(playerCoords.width, playerCoords.height, SIDE_LENGTH, SIDE_LENGTH);
+					displayImage(portrait);
+					File outputfile = new File("image.jpg");
+					javax.imageio.ImageIO.write(portrait, "jpg", outputfile);
+				//}
 			}
 		}
+		
+		return null;
+	}
+
+
+	private void displayImage(BufferedImage portrait) {
+		
 	}
 	
 	/*
@@ -90,7 +127,7 @@ public class LobbyReader{
 	 */
 	public int checkPixel(Dimension coords) throws IOException{
 		// Getting pixel color by position x and y... neat stuff
-		int clr =  img.getRGB(coords.width,coords.height); 
+		int clr =  ss.getRGB(coords.width,coords.height); 
 		/*int  a  = (clr & 0xff000000) >> 24; // alpha \o/ (?)
 		int  r  = (clr & 0x00ff0000) >> 16; // good ol' roy g. biv
 		int  g  = (clr & 0x0000ff00) >> 8;
@@ -112,7 +149,7 @@ public class LobbyReader{
 	 * but nah
 	 */
 	public void update(){
-	
+		ss = screenshot();
 	}
 }
 /*------------------------------
