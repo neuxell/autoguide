@@ -28,14 +28,14 @@ public class LobbyReader{
 	private static File bankFolder;
 	private static String[] selection;
 	private static BufferedImage ss;
-	private int t1x, t2x, y1, playerSpacing;
-	private Dimension screenSize, defaultClientSize, topLeftCoords;
+	private int t1x, t2x, y1; // for portraits
+	private int playerSpacing;
+	private Dimension screenSize, defaultClientSize, topLeftCoords, nameOffset;
 	
 	private JFrame imageViewer;
 	
 	public LobbyReader(){
 		imageViewer = new JFrame("LR-Vision");
-		
 	
 		final int PICKS = 10;
 		final int BANS = 6;
@@ -51,15 +51,25 @@ public class LobbyReader{
 		t2x = topLeftCoords.width+1010; // team 2 x
 		y1 = topLeftCoords.height+113; // y-position of the first player on each team
 		playerSpacing = 66; // spacing per player
+		nameOffset = new Dimension(97, 101);
 
 		openPortraitFolder();
-		processPortraits();
+		try {
+			processPortraits();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
-	private void processPortraits() {
+	// TODO: is this method necessary?
+	/*public String[] getSelection(){
+		return selection;
+	}*/
+	
+	private void processPortraits() throws IOException {
 		// TODO: MULTITHREAD: put this in its own thread, for team 1. Then do a second for team 2
 		for(int i = 0; i < 5; i++){ // for every player
-			String playerName = OCR(new Dimension(t1x, y1+playerSpacing*i));
+			String playerName = OCR(new Dimension(t1x+nameOffset.width, (y1+playerSpacing*i)+nameOffset.height));
 			String champName = identifySelection(new Dimension(t1x, y1+playerSpacing*i));
 			selection[i] += "1" + playerName + ":" + champName;
 		}
@@ -84,6 +94,7 @@ public class LobbyReader{
 		} catch (java.awt.HeadlessException | java.awt.AWTException e1) {
 			e1.printStackTrace();
 		}
+		return null;
 	}
 	
 	public void openPortraitFolder(){
@@ -138,10 +149,6 @@ public class LobbyReader{
 		System.out.println(",A"+ a);*/
 		
 		return clr;
-	}
-	
-	public String[] getSelection(){
-		return selection;
 	}
 	
 	/*
