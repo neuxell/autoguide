@@ -1,0 +1,44 @@
+/* take screenshot
+check all champ placeholders
+-> check if a champ is selected there
+-> if so, find out what that champ is
+return the name of the champ? Or return the array of all the champs selected (+ banned?)
+
+I think it should return an array of all in play champs.
+Integer[][] // rows = team 1, team 2
+			// cols = players 1-5, per team
+
+I thought about making Portrait objects,
+but the simplest route would be to use a 2d integer array containing the rgb integer
+and using bitwise to find the ARGB
+
+Integer[2][0] // get player 3 from team 1
+
+--------------------------------------------------------*/
+public static void main(String[] args){
+	BufferedImage img = screenshot();
+
+	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+	int[] X = teamLines(screenSize);
+	int[] Y = playerLines(screenSize);
+}
+
+/*
+ * prereq: the window must be in the default location and size
+ */
+public int[] teamLines(Dimension screenSize){
+
+}
+
+/*
+ * prereq: the window must be in the default location and size
+ */
+public int[] playerLines(Dimension screenSize){
+	final Dimension defaultClientSize = new Dimesion(1024, 768);
+	Dimension topLeftCoords = new Dimension(((screenSize.x/4)-(defaultClientSize.x/4)),
+											(screenSize.y/4)-(defaultClientSize.y/4));
+	final int TEAM_1_X = topLeftCoords.x+34;
+	final int TEAM_2_X = topLeftCoords.x+1010;
+	final int PLAYER_1_Y = topLeftCoords.y+113;
+	final int PLAYER_SPACING = 66;
+}

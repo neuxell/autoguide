@@ -86,6 +86,7 @@ public class LobbyReader extends JFrame{
 					e.printStackTrace();
 				}
 				picks.put("("+x+","+y+")", clr);
+				Dimension d = new Dimension(1024, 728);
 			}
 		}
 		
