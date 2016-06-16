@@ -1,162 +1,123 @@
 package main;
 
-import java.awt.AWTException;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.HeadlessException;
-import java.awt.Rectangle;
-import java.awt.Robot;
-import java.awt.Toolkit;
+import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
 
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
+/* take screenshot
+check all champ placeholders
+-> check if a champ is selected there
+-> if so, find out what that champ is
+return the name of the champ? Or return the array of all the champs selected (+ banned?)
 
-@SuppressWarnings("serial") // because serial versions are for tryhards :P nah, i just dont think I'll be needing it here.
-public class LobbyReader extends JFrame{
-	private BufferedImage image;
-	private Map<String, Integer> picks;
+I think it should return an array of all in play champs.
+Integer[][] // rows = team 1, team 2
+			// cols = players 1-5, per team
 
-	public static void main(String[] args){
-		new LobbyReader();
-	}
+I thought about making Portrait objects,
+but the simplest route would be to use a 2d integer array containing the rgb integer
+and using bitwise to find the ARGB
+
+Integer[2][0] // get player 3 from team 1
+
+--------------------------------------------------------*/
+public class LobbyReader{
+	private static File bankFolder;
+	private static String[] selection;
+	private static BufferedImage ss;
+	private int t1x, t2x, y1, playerSpacing;
+	private Dimension screenSize, defaultClientSize, topLeftCoords;
 	
 	public LobbyReader(){
-		//standard jframe setup
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-		// TODO: replace with auto screenshot taker, or constant screen checker (for updating screenshots)
-		// ideas: opencv/+ocr, find the portraits, and save them. that's the name of the game :^)
-		try {
-			image = new Robot().createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
-			getContentPane().add(new JLabel(new ImageIcon(image)), BorderLayout.CENTER);
-			pack();
-			setVisible(true);
-		} catch (HeadlessException | AWTException e1) {
-			e1.printStackTrace();
+		openPortraitFolder();
+		bankFolder = new File("/portraits");
+	
+		final int PICKS = 10;
+		final int BANS = 6;
+		selection = new String[PICKS+BANS]; // first 10 for picks, last 6 for bans
+		ss = screenshot(); // screenshot
+	
+		// default client location, adjust by screen resolution
+		screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+		defaultClientSize = new Dimension(1024, 768);
+		topLeftCoords = new Dimension(((screenSize.width/4)-(defaultClientSize.width/4)),
+												(screenSize.height/4)-(defaultClientSize.height/4));
+		t1x = topLeftCoords.width+34; // team 1 x
+		t2x = topLeftCoords.width+1010; // team 2 x
+		y1 = topLeftCoords.height+113; // y-position of the first player on each team
+		playerSpacing = 66; // spacing per player
+	
+		// TODO: MULTITHREAD: put this in its own thread, for team 1. Then do a second for team 2
+		for(int i = 0; i < 5; i++){ // for every player
+			String selection = identifySelection(new Dimension(t1x, y1+playerSpacing*i));
 		}
-		picks = new HashMap<String, Integer>();
-
-		// TODO: this is hardcoded for 1920x1080, so uh.. yeah. You can see why that's bad.
-		int[] X = new int[]{370, 1342}; // team 1, team 2
-		int[] Y = new int[]{317, 382, 446, 514, 579}; // players 1-5
-		int size = 25; //note: aoe
-		
-		/*
-		 * basically, in the initial phase of this portion, it was to extract from 10 points (xy's)
-		 * then i expanded on that, adding size adjustment of the aoe
-		 */
-		for(int x:X){ // loop through teams (x-positions)
-			for(int y:Y){ // loop through the players (y-positions)
-				int clr = 0;
-				try {
-					clr = checkPixel(x, y);
-					List<Integer> sample = new ArrayList<Integer>();
-					// records the portrait sample of 'size' area |for visual purposes atm, later can be rev.eng'd
-					for(int i = 0; i<size; i++){
-						for(int j = 0; j<size; j++){ // TODO: identify/update champions based on pixel selection
-							sample.add(image.getRGB(x+i, y+j));
-							image.setRGB(x+i, y+j, Color.red.getRGB());
-							/*
-							 * alternative approach to the aoe... but I didn't care to learn how to use it.
-							 * besides, my approach is probably simpler... which I guess is better in this case
-							 */
-							//image.setRGB(x, y, 30, 30, new int[]{Color.blue.getRGB()}, 0, 2);
-						}
-					}
-					repaint();
-
-					String champ = identify(sample);
-					if(champ != "")
-						System.out.println(champ + " detected.");
-					else{
-						System.out.println("Unidentified champion.");
-						// TODO: 
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
+	
+		for(int i = 0; i < 5; i++){ // for every player
+			String selection = identifySelection(new Dimension(t2x, y1+playerSpacing*i));
+		}
+	}
+	
+	public void openPortraitFolder(){
+	
+	}
+	
+	/*
+	 * the champ portrait bank will need to be stocked before processing is possible
+	 * check portrait: found? Return name. Not? save it, and ask for its label
+	 */
+	public String identifySelection(Dimension playerCoords){
+	
+		// check portrait
+		final int SIDE_LENGTH = 5;
+		for(int x = 0; x < SIDE_LENGTH; x++){
+			for(int y = 0; y < SIDE_LENGTH; y++){
+				int clr = checkPixel(new Dimension(playerCoords.width+x, playerCoords.height+y);
+				// if found
+	
+				// if not found{
+					System.out.println("What is the name of this champ?");
+					displayImage(champ);
 				}
-				picks.put("("+x+","+y+")", clr);
-				Dimension d = new Dimension(1024, 728);
 			}
 		}
-		
-		System.out.println("\n\n"+picks.toString());
 	}
 	
-	
-	
 	/*
-	 * match a small set of pixels to the champion portraits archive.
-	 * if it's found, return the champ's name
-	 * otherwise, save it, and ask for its name
+	 * returns the color of the pixel
+	 * this is really more of just a personal reference,
+	 * as I plan to come back and use the bitwise operations shown here
 	 */
-	public String identify(List<Integer> sample) throws FileNotFoundException{
-		String champname = "";
-		/*
-		 * find all files in the directory
-		 */
-		Scanner colorScan = new Scanner(System.in);
-		File[] portraitList = new File("/portraits").listFiles();
-		if(portraitList != null)
-			for(File f : portraitList){
-				System.out.println(f.getName() + "'s portrait found.");
-				colorScan = new Scanner(f);
-				for(Integer clr : sample)
-					if(!colorScan.hasNext()){
-						System.out.print("Matched: ");
-						break;
-					}
-					else if(Integer.valueOf(colorScan.nextLine()) != clr){
-						System.out.print("Match failed for ");
-						break;
-					}
-			}
-		else{
-			System.out.println("No portraits found.");
-			return null;
-		}
-		/*
-		 * for every portrait, do this
-		 */
-		// first, find all traces of the first pixel
-		
-		// followup with traces of the second | for now, this is the farthest it will be taken
-		// (won't be matching like 99 points. just 1 initially)
-		// finally, squentially match the rest of the image
-		
-		return champname;
-	}
-
-	/*
-	 *	returns the color of the pixel
-	 */
-	public int checkPixel(int x, int y) throws IOException{
+	public int checkPixel(Dimension coords) throws IOException{
 		// Getting pixel color by position x and y... neat stuff
-		int clr =  image.getRGB(x,y); 
-		int  a  = (clr & 0xff000000) >> 24; // alpha \o/
+		int clr =  img.getRGB(coords.width,coords.height); 
+		/*int  a  = (clr & 0xff000000) >> 24; // alpha \o/ (?)
 		int  r  = (clr & 0x00ff0000) >> 16; // good ol' roy g. biv
 		int  g  = (clr & 0x0000ff00) >> 8;
 		int  b  =  clr & 0x000000ff;
 		System.out.print("R"+ r);
 		System.out.print(",G"+ g);
 		System.out.print(",B"+ b);
-		System.out.println(",A"+ a);
+		System.out.println(",A"+ a);*/
 		
 		return clr;
 	}
 	
-	public Map<String, Integer> getPicks(){
-		return picks;
+	public String[] getSelection(){
+		return selection;
+	}
+	
+	/*
+	 * I was thinking that update should return the new selection string
+	 * but nah
+	 */
+	public void update(){
+	
 	}
 }
-
+/*------------------------------
+supposedly, [GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+int width = gd.getDisplayMode().getWidth();
+int height = gd.getDisplayMode().getHeight();]
+is supposed to be better for grabbing the monitor resolution in a multi-monitor config.
+i.e. use this as a back up if program goes kaputt due to resolution finding problems*/
