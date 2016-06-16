@@ -1,4 +1,4 @@
-# autoguide
+# overview
 Automatically identifies all characters currently picked and banned. (Riot API does not provide pregame (lobby) stats.) Makes use of certain sites for the strategy findings. In the future, the Riot API will be implemented for my own special analytics.
 
 # instructions
