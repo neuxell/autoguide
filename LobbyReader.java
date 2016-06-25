@@ -165,3 +165,26 @@ int width = gd.getDisplayMode().getWidth();
 int height = gd.getDisplayMode().getHeight();]
 is supposed to be better for grabbing the monitor resolution in a multi-monitor config.
 i.e. use this as a back up if program goes kaputt due to resolution finding problems*/
+
+class TeamScan implements Runnable{
+	private Thread t;
+	private String threadName;
+	
+	/*
+	 * takes the x-coordinate of the team as argument
+	 * there is no default constructor, because
+	 * that would mean the scanner would have to locate
+	 * the x by itself
+	 */
+	public TeamScan(int x){
+		threadName = "TeamScan-" + x;
+		System.out.println(threadName + ": commencing scan...");
+	}
+	
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+}
