@@ -4,6 +4,9 @@ import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 import javax.swing.JFrame;
 
@@ -23,7 +26,12 @@ and using bitwise to find the ARGB
 
 Integer[2][0] // get player 3 from team 1
 
---------------------------------------------------------*/
+--------------------------------------------------------
+
+Sites to use: lolcounter.com, op.gg, champion.gg
+APIs to use: tesseract-ocr, opencv3
+
+*/
 public class LobbyReader{
 	private static File bankFolder;
 	private static String[] selection;
@@ -32,6 +40,8 @@ public class LobbyReader{
 	private int playerSpacing;
 	private Dimension screenSize, defaultClientSize, topLeftCoords, nameOffset;
 	
+	private final List<String> picks, bans;
+	
 	private JFrame imageViewer;
 	
 	public LobbyReader(){
@@ -39,14 +49,17 @@ public class LobbyReader{
 	
 		final int PICKS = 10;
 		final int BANS = 6;
+		
+		picks = new ArrayList<String>();
+		bans = new ArrayList<String>();
 		selection = new String[PICKS+BANS]; // first 10 for picks, last 6 for bans
-		ss = screenshot(); // screenshot
+		ss = screenshot();
 	
 		// default client location, adjust by screen resolution
 		screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
 		defaultClientSize = new Dimension(1024, 768);
 		topLeftCoords = new Dimension(((screenSize.width/4)-(defaultClientSize.width/4)),
-												(screenSize.height/4)-(defaultClientSize.height/4));
+									   (screenSize.height/4)-(defaultClientSize.height/4));
 		t1x = topLeftCoords.width+34; // team 1 x
 		t2x = topLeftCoords.width+1010; // team 2 x
 		y1 = topLeftCoords.height+113; // y-position of the first player on each team
@@ -59,6 +72,10 @@ public class LobbyReader{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static void main(String[] args){
+		new LobbyReader();
 	}
 	
 	// TODO: is this method necessary?
@@ -111,21 +128,35 @@ public class LobbyReader{
 		for(int x = 0; x < SIDE_LENGTH; x++){
 			for(int y = 0; y < SIDE_LENGTH; y++){
 				int clr = checkPixel(new Dimension(playerCoords.width+x, playerCoords.height+y));
-				// if found
-	
-				// if not found{
+				
+				boolean found = recognize(clr);
+				
+				if(found){
+					//return champname;
+				}else{
+					Scanner ui = new Scanner(System.in);
+				
 					System.out.println("What is the name of this champ?");
+					String champname = ui.nextLine(); // I'm not gonna bother with sanitizing input.
+					
 					BufferedImage portrait = ss.getSubimage(playerCoords.width, playerCoords.height, SIDE_LENGTH, SIDE_LENGTH);
 					displayImage(portrait);
 					File outputfile = new File("image.jpg");
 					javax.imageio.ImageIO.write(portrait, "jpg", outputfile);
-				//}
+					
+					return champname;
+				}
 			}
 		}
 		
 		return null;
 	}
 
+
+	private boolean recognize(int clr) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 	private void displayImage(BufferedImage portrait) {
 		
@@ -159,12 +190,14 @@ public class LobbyReader{
 		ss = screenshot();
 	}
 }
+
 /*------------------------------
 supposedly, [GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 int width = gd.getDisplayMode().getWidth();
 int height = gd.getDisplayMode().getHeight();]
 is supposed to be better for grabbing the monitor resolution in a multi-monitor config.
-i.e. use this as a back up if program goes kaputt due to resolution finding problems*/
+i.e. use this as a back up if program goes kaputt due to resolution finding problems
+-------------------------------*/
 
 class TeamScan implements Runnable{
 	private Thread t;
